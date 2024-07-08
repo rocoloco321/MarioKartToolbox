@@ -175,7 +175,7 @@ public sealed class Gizmo
         if (!Started && context.SceneObjectHolder.SelectionSize > 1)
             _currentRotation = Vector3d.Zero;
 
-        if (_currentTransforms.Count == 1)
+        if (context.SceneObjectHolder.SelectionSize == 1)
             _currentRotation = _currentTransforms.First().Value.Rotation;
 
         float[] bb = null;
