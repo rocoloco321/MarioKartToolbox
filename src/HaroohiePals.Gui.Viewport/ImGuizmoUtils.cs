@@ -3,7 +3,7 @@ using OpenTK.Mathematics;
 
 namespace HaroohiePals.Gui.Viewport;
 
-internal static class ImGuizmoUtils
+static class ImGuizmoUtils
 {
     public static Vector4 BuildPlane(Vector3 pPoint1, Vector3 pNormal)
     {
@@ -15,9 +15,6 @@ internal static class ImGuizmoUtils
         result.Z = normal.Z;
         return result;
     }
-
-    public static float IntersectRayPlane(Vector3 rOrigin, Vector3 rVector, Vector3 plane)
-        => IntersectRayPlane(rOrigin, rVector, new Vector4(plane, 0));
 
     public static float IntersectRayPlane(Vector3 rOrigin, Vector3 rVector, Vector4 plane)
     {

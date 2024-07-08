@@ -1166,7 +1166,7 @@ sealed class ImGuizmo
 
                     _context.BoundsPivot = aabb[(i + 2) % 4].Xyz.TransformPoint(_context.ModelSource);
                     _context.BoundsAnchor = aabb[i].Xyz.TransformPoint(_context.ModelSource);
-                    _context.BoundsPlane = ImGuizmoUtils.BuildPlane(_context.BoundsAnchor, bestAxisWorldDirection).Xyz;
+                    _context.BoundsPlane = ImGuizmoUtils.BuildPlane(_context.BoundsAnchor, bestAxisWorldDirection);
                     _context.BoundsBestAxis = bestAxis;
                     _context.BoundsAxis[0] = secondAxis;
                     _context.BoundsAxis[1] = thirdAxis;
@@ -1187,14 +1187,14 @@ sealed class ImGuizmo
                     var midPointOpposite = (aabb[(i + 2) % 4] + aabb[(i + 3) % 4]) * 0.5f;
                     _context.BoundsPivot = midPointOpposite.Xyz.TransformPoint(_context.ModelSource);
                     _context.BoundsAnchor = midPoint.Xyz.TransformPoint(_context.ModelSource);
-                    _context.BoundsPlane = ImGuizmoUtils.BuildPlane(_context.BoundsAnchor, bestAxisWorldDirection).Xyz;
+                    _context.BoundsPlane = ImGuizmoUtils.BuildPlane(_context.BoundsAnchor, bestAxisWorldDirection);
                     _context.BoundsBestAxis = bestAxis;
                     int[] indices = new[] { secondAxis, thirdAxis };
                     _context.BoundsAxis[0] = indices[i % 2];
                     _context.BoundsAxis[1] = -1;
 
                     _context.BoundsLocalPivot = Vector3.Zero;
-                    _context.BoundsLocalPivot[_context.BoundsAxis[0]] = aabb[oppositeIndex][indices[i % 2]];// bounds[_context.BoundsAxis[0]] * (((i + 1) & 2) ? 1.f : -1.f);
+                    _context.BoundsLocalPivot[_context.BoundsAxis[0]] = aabb[oppositeIndex][indices[i % 2]];
 
                     _context.IsUsingBounds = true;
                     _context.EditingID = _context.ActualID;

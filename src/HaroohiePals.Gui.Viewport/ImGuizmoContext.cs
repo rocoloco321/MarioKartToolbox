@@ -67,7 +67,7 @@ sealed class ImGuizmoContext
     // bounds stretching
     public Vector3 BoundsPivot;
     public Vector3 BoundsAnchor;
-    public Vector3 BoundsPlane;
+    public Vector4 BoundsPlane;
     public Vector3 BoundsLocalPivot;
     public int BoundsBestAxis;
     public int[] BoundsAxis = new int[2];
