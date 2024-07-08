@@ -41,19 +41,26 @@ public sealed class Gizmo
 
     public void Draw(ViewportContext context)
     {
-        TryFinishGizmoTransform(context);
-
-        switch (Tool)
+        try
         {
-            case GizmoTool.Translate:
-            case GizmoTool.Rotate:
-            case GizmoTool.Scale:
-                DrawGizmo(context);
-                break;
-            case GizmoTool.Draw:
-                if (ImGui.IsWindowHovered() && !_imGuizmo.IsOver())
-                    DrawTool?.PerformDraw(context);
-                break;
+            TryFinishGizmoTransform(context);
+
+            switch (Tool)
+            {
+                case GizmoTool.Translate:
+                case GizmoTool.Rotate:
+                case GizmoTool.Scale:
+                    DrawGizmo(context);
+                    break;
+                case GizmoTool.Draw:
+                    if (ImGui.IsWindowHovered() && !_imGuizmo.IsOver())
+                        DrawTool?.PerformDraw(context);
+                    break;
+            }
+        }
+        catch
+        {
+            CancelGizmoTransform();
         }
     }
 
