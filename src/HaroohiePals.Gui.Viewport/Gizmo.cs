@@ -74,6 +74,9 @@ public sealed class Gizmo
         Started = false;
         _imGuizmo.ConfirmAction = ImGuizmoConfirmAction.MouseUp;
         _imGuizmo.StopUsing();
+
+        _oldTransforms.Clear();
+        _currentTransforms.Clear();
     }
 
     public void Update()
@@ -212,14 +215,14 @@ public sealed class Gizmo
 
         foreach (var transformKeyValue in _currentTransforms)
         {
-            var transform = transformKeyValue.Value;
-
             // Avoid issues when changing the selection on the same frame
-            if (_currentTransforms.Count == 0 || !_oldTransforms.TryGetValue(transformKeyValue.Key, out var oldTransform))
+            if (!AreCurrentTransformsValid() || !_oldTransforms.TryGetValue(transformKeyValue.Key, out var oldTransform))
             {
                 CancelGizmoTransform();
                 return;
             }
+
+            var transform = transformKeyValue.Value;
 
             switch (Tool)
             {
@@ -332,7 +335,7 @@ public sealed class Gizmo
             return;
 
         // Avoid issues when changing the selection on the same frame
-        if (_currentTransforms.Count == 0)
+        if (!AreCurrentTransformsValid())
         {
             CancelGizmoTransform();
             return;
@@ -351,7 +354,13 @@ public sealed class Gizmo
             if (_renderGroupScene.RenderGroups.TryGetObjectTransformGroup(transformKeyValue.Key.obj,
                 transformKeyValue.Key.subIndex, out var transform, out var group))
             {
-                var oldTransform = _oldTransforms[transformKeyValue.Key];
+                // Avoid issues when changing the selection on the same frame
+                if (!_oldTransforms.TryGetValue(transformKeyValue.Key, out var oldTransform))
+                {
+                    CancelGizmoTransform();
+                    return;
+                }
+
                 actions.Add(new SetObjectTransformAction(group, transformKeyValue.Key.obj,
                     transformKeyValue.Key.subIndex, oldTransform, transform));
             }
@@ -555,4 +564,7 @@ public sealed class Gizmo
 
         return result;
     }
+
+    private bool AreCurrentTransformsValid()
+        => _oldTransforms.Count == _currentTransforms.Count;
 }
