@@ -11,106 +11,102 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace HaroohiePals.MarioKartToolbox.OpenGL.RenderGroups.MapData
+namespace HaroohiePals.MarioKartToolbox.OpenGL.RenderGroups.MapData;
+
+internal class AreaShapeRenderGroup : RenderGroup, IColoredRenderGroup, IDisposable
 {
-    internal class AreaShapeRenderGroup : RenderGroup, IColoredRenderGroup, IDisposable
+    private const int AREA_SHAPE_SUB_INDEX = 0;
+
+    protected readonly MapDataCollection<MkdsArea> _collection;
+    public Color Color { get; set; }
+
+    private MeshRenderer _boxRenderer;
+    private MeshRenderer _cylinderRenderer;
+
+    public bool ShowAll = false;
+
+    public AreaShapeRenderGroup(MapDataCollection<MkdsArea> collection, Color color, bool render2d, IRendererFactory rendererFactory)
     {
-        private const int AREA_SHAPE_SUB_INDEX = 0;
+        Color = color;
+        _collection = collection;
+        _cylinderRenderer = rendererFactory.CreateCylinderAreaRenderer(render2d);
+        _boxRenderer = rendererFactory.CreateBoxAreaRenderer(render2d);
+    }
 
-        protected readonly MapDataCollection<MkdsArea> _collection;
-        public Color Color { get; set; }
-
-        //private const int ShapeShift = 13;
-        //private const int PointIdMask = 0x1FFF;
-
-        private MeshRenderer _boxRenderer;
-        private MeshRenderer _cylinderRenderer;
-
-        public bool ShowAll = false;
-
-        public AreaShapeRenderGroup(MapDataCollection<MkdsArea> collection, Color color, bool render2d, IRendererFactory rendererFactory)
+    private InstancedPoint[] SetupPoints(ViewportContext context, IEnumerable<MkdsArea> visibleAreas, MkdsAreaShapeType shape)
+    {
+        var points = visibleAreas.Where(x => x.Shape == shape).Select(x =>
         {
-            Color = color;
-            _collection = collection;
-            _cylinderRenderer = rendererFactory.CreateCylinderAreaRenderer(render2d);
-            _boxRenderer = rendererFactory.CreateBoxAreaRenderer(render2d);
+            uint pickingId = ViewportContext.GetPickingId(PickingGroupId, _collection.IndexOf(x), AREA_SHAPE_SUB_INDEX); // MktbRendererUtil.GetPickingId(i, PickingGroupId, ShapeShift, PointIdMask, (int)shape, 0);
+            bool isSelected = context.IsSelected(x, AREA_SHAPE_SUB_INDEX);
+            bool isHovered = context.IsHovered(x, AREA_SHAPE_SUB_INDEX);
+
+            return new InstancedPoint(x.GetTransformMatrix(), Color, false, x, pickingId, isHovered, isSelected);
+        }).ToArray();
+
+        return points;
+    }
+
+    public override void Render(ViewportContext context)
+    {
+        if (!context.TranslucentPass)
+            return;
+
+        var visibleAreas = ShowAll ? _collection : context.SceneObjectHolder.GetSelection().OfType<MkdsArea>();
+
+        //Box
+        _boxRenderer.Points = SetupPoints(context, visibleAreas, MkdsAreaShapeType.Box);
+        _boxRenderer.Render(context);
+
+        //Cylinder
+        _cylinderRenderer.Points = SetupPoints(context, visibleAreas, MkdsAreaShapeType.Cylinder);
+        _cylinderRenderer.Render(context);
+    }
+
+    public override object GetObject(int index)
+        => _collection[index];
+
+    public override bool ContainsObject(object obj) 
+        => obj is MkdsArea instance && _collection.Contains(instance);
+
+    public override bool TryGetObjectTransform(object obj, int subIndex, out Transform transform)
+    {
+        if (subIndex != AREA_SHAPE_SUB_INDEX || obj is not MkdsArea area)
+        {
+            transform = new Transform(new(0), new(0), new(1));
+            return false;
         }
 
-        private InstancedPoint[] SetupPoints(ViewportContext context, MkdsAreaShapeType shape)
+        transform = area.GetTransform();
+
+        return true;
+    }
+
+    public override bool TrySetObjectTransform(object obj, int subIndex, in Transform transform)
+    {
+        if (subIndex != AREA_SHAPE_SUB_INDEX || obj is not MkdsArea area)
+            return false;
+
+        area.SetTransform(transform);
+
+        return true;
+    }
+
+    public override bool TryGetLocalObjectBounds(object obj, int subIndex, out AxisAlignedBoundingBox bounds)
+    {
+        if (obj is not MkdsArea area)
         {
-            var points = _collection.Where(x => x.Shape == shape).Select(x =>
-            {
-                uint pickingId = ViewportContext.GetPickingId(PickingGroupId, _collection.IndexOf(x), AREA_SHAPE_SUB_INDEX); // MktbRendererUtil.GetPickingId(i, PickingGroupId, ShapeShift, PointIdMask, (int)shape, 0);
-                bool isSelected = context.IsSelected(x, AREA_SHAPE_SUB_INDEX);
-                bool isHovered = context.IsHovered(x, AREA_SHAPE_SUB_INDEX);
-
-                return new InstancedPoint(x.GetTransformMatrix(), Color, false, x, pickingId, isHovered, isSelected);
-            }).ToArray();
-
-            return points;
+            bounds = AxisAlignedBoundingBox.Zero;
+            return false;
         }
 
-        public override void Render(ViewportContext context)
-        {
-            if (!context.TranslucentPass)
-                return;
+        bounds = area.GetLocalBounds();
+        return true;
+    }
 
-            var areas = ShowAll ? _collection : context.SceneObjectHolder.GetSelection().OfType<MkdsArea>();
-
-            //Box
-            _boxRenderer.Points = SetupPoints(context, MkdsAreaShapeType.Box);
-            _boxRenderer.Render(context);
-
-            //Cylinder
-            _cylinderRenderer.Points = SetupPoints(context, MkdsAreaShapeType.Cylinder);
-            _cylinderRenderer.Render(context);
-        }
-
-        public override object GetObject(int index)
-            => _collection[index];
-
-        public override bool ContainsObject(object obj) 
-            => obj is MkdsArea instance && _collection.Contains(instance);
-
-        public override bool TryGetObjectTransform(object obj, int subIndex, out Transform transform)
-        {
-            if (subIndex != AREA_SHAPE_SUB_INDEX || obj is not MkdsArea area)
-            {
-                transform = new Transform(new(0), new(0), new(1));
-                return false;
-            }
-
-            transform = area.GetTransform();
-
-            return true;
-        }
-
-        public override bool TrySetObjectTransform(object obj, int subIndex, in Transform transform)
-        {
-            if (subIndex != AREA_SHAPE_SUB_INDEX || obj is not MkdsArea area)
-                return false;
-
-            area.SetTransform(transform);
-
-            return true;
-        }
-
-        public override bool TryGetLocalObjectBounds(object obj, int subIndex, out AxisAlignedBoundingBox bounds)
-        {
-            if (subIndex != AREA_SHAPE_SUB_INDEX || obj is not MkdsArea area)
-            {
-                bounds = AxisAlignedBoundingBox.Zero;
-                return false;
-            }
-
-            bounds = area.GetLocalBounds();
-            return true;
-        }
-
-        public void Dispose()
-        {
-            _boxRenderer.Dispose();
-            _cylinderRenderer.Dispose();
-        }
+    public void Dispose()
+    {
+        _boxRenderer.Dispose();
+        _cylinderRenderer.Dispose();
     }
 }
