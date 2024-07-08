@@ -165,8 +165,6 @@ public class Gizmo
 
         var averagePos = GetAveragePosition();
 
-        var currentScale = Vector3d.One;
-
         if (!Started && context.SceneObjectHolder.SelectionSize > 1)
             _currentRotation = Vector3d.Zero;
 
@@ -182,8 +180,7 @@ public class Gizmo
                   (float)firstBound.Maximum.X, (float)firstBound.Maximum.Y, (float)firstBound.Maximum.Z];
         }
 
-        var mtx = Matrix4.CreateScale((Vector3)currentScale) *
-                  Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_currentRotation.X)) *
+        var mtx = Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_currentRotation.X)) *
                   Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(_currentRotation.Y)) *
                   Matrix4.CreateRotationZ((float)MathHelper.DegreesToRadians(_currentRotation.Z)) *
                   Matrix4.CreateTranslation((Vector3)averagePos);
