@@ -120,7 +120,7 @@ sealed class ImGuizmo
 
             // behind camera
             var camSpacePosition = Vector3.Zero.TransformPoint(_context.MVP);
-            if (!_context.IsOrthographic && camSpacePosition.Z < 0.001f)
+            if (!_context.IsOrthographic && camSpacePosition.Z < 0.001f && !_context.IsUsing)
             {
                 return false;
             }
@@ -1101,8 +1101,9 @@ sealed class ImGuizmo
             Matrix4 boundsMVP = _context.ModelSource * _context.ViewProjection;
             for (int i = 0; i < 4; i++)
             {
-                var worldBound1 = ImGuizmoUtils.WorldToPos(aabb[i].Xyz, boundsMVP, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
-                var worldBound2 = ImGuizmoUtils.WorldToPos(aabb[(i + 1) % 4].Xyz, boundsMVP, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
+                var worldBound1 = ImGuizmoUtils.WorldToPos(aabb[i].Xyz, boundsMVP, (_context.X, _context.Y), (_context.Width, _context.Height));
+                var worldBound2 = ImGuizmoUtils.WorldToPos(aabb[(i + 1) % 4].Xyz, boundsMVP, (_context.X, _context.Y), (_context.Width, _context.Height));
+
                 if (!IsInContextRect(worldBound1) || !IsInContextRect(worldBound2))
                 {
                     continue;
@@ -1121,7 +1122,7 @@ sealed class ImGuizmo
                     drawList.AddLine(worldBoundSS1, worldBoundSS2, 0xAAAAAA00 + anchorAlpha, 2f);
                 }
                 var midPoint = (aabb[i] + aabb[(i + 1) % 4]) * 0.5f;
-                var midBound = ImGuizmoUtils.WorldToPos(midPoint.Xyz, boundsMVP, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
+                var midBound = ImGuizmoUtils.WorldToPos(midPoint.Xyz, boundsMVP, (_context.X, _context.Y), (_context.Width, _context.Height));
                 float AnchorBigRadius = 8f;
                 float AnchorSmallRadius = 6f;
                 bool overBigAnchor = (worldBound1 - io.MousePos).LengthSquared() <= (AnchorBigRadius * AnchorBigRadius);
