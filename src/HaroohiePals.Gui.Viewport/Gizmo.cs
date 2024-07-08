@@ -29,13 +29,13 @@ public class Gizmo
     private readonly ImGuizmo _imGuizmo = new();
     private readonly Dictionary<(object obj, int subIndex), Transform> _oldTransforms = new();
     private readonly Dictionary<(object obj, int subIndex), Transform> _currentTransforms = new();
-    private readonly Dictionary<(object obj, int subIndex), AxisAlignedBoundingBox> _currentBounds = new();
 
     private readonly RenderGroupScene _renderGroupScene;
 
     private string _inputOverrideValue = "";
     private Vector3d _oldAveragePos = Vector3.Zero;
     private Vector3d _currentRotation = Vector3.Zero;
+    private AxisAlignedBoundingBox? _currentBounds = null;
 
     public Gizmo(RenderGroupScene renderGroupScene)
     {
@@ -115,7 +115,7 @@ public class Gizmo
     private void UpdateCurrentTransformsAndBounds(ViewportContext context, bool updateBounds)
     {
         _currentTransforms.Clear();
-        _currentBounds.Clear();
+        _currentBounds = null;
 
         foreach (object obj in context.SceneObjectHolder.GetSelection())
         {
@@ -128,7 +128,7 @@ public class Gizmo
                     _currentTransforms.Add((obj, i), transform);
 
                 if (updateBounds && _renderGroupScene.RenderGroups.TryGetLocalObjectBounds(obj, i, out var bounds))
-                    _currentBounds.Add((obj, i), bounds);
+                    _currentBounds = bounds;
             }
         }
     }
@@ -173,11 +173,10 @@ public class Gizmo
 
         float[] bb = null;
 
-        if (Tool == GizmoTool.Scale && _currentBounds.Count == 1)
+        if (Tool == GizmoTool.Scale && _currentBounds is not null)
         {
-            var firstBound = _currentBounds.First().Value;
-            bb = [(float)firstBound.Minimum.X, (float)firstBound.Minimum.Y, (float)firstBound.Minimum.Z,
-                  (float)firstBound.Maximum.X, (float)firstBound.Maximum.Y, (float)firstBound.Maximum.Z];
+            bb = [(float)_currentBounds?.Minimum.X, (float)_currentBounds?.Minimum.Y, (float)_currentBounds?.Minimum.Z,
+                  (float)_currentBounds?.Maximum.X, (float)_currentBounds?.Maximum.Y, (float)_currentBounds?.Maximum.Z];
         }
 
         var mtx = Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_currentRotation.X)) *
@@ -206,7 +205,7 @@ public class Gizmo
         var resultPosDiff = deltaMtx.ExtractTranslation();
         var resultPosition = mtx.ExtractTranslation();
         var resultScale = mtx.ExtractScale();
-        
+
         foreach (var transformKeyValue in _currentTransforms)
         {
             var transform = transformKeyValue.Value;
@@ -270,8 +269,10 @@ public class Gizmo
                         transform.Scale = oldTransform.Scale * resultScale;
                     }
 
-                    if (_currentBounds.Count == 1)
+                    if (_currentBounds is not null)
+                    {
                         transform.Translation = resultPosition;
+                    }
 
                     break;
             }
