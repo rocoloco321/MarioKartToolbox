@@ -213,7 +213,13 @@ public sealed class Gizmo
         foreach (var transformKeyValue in _currentTransforms)
         {
             var transform = transformKeyValue.Value;
-            var oldTransform = _oldTransforms[transformKeyValue.Key];
+
+            // Avoid issues when changing the selection on the same frame
+            if (_currentTransforms.Count == 0 || !_oldTransforms.TryGetValue(transformKeyValue.Key, out var oldTransform))
+            {
+                CancelGizmoTransform();
+                return;
+            }
 
             switch (Tool)
             {
@@ -324,6 +330,13 @@ public sealed class Gizmo
     {
         if (!Started || _imGuizmo.IsUsing)
             return;
+
+        // Avoid issues when changing the selection on the same frame
+        if (_currentTransforms.Count == 0)
+        {
+            CancelGizmoTransform();
+            return;
+        }
 
         Started = false;
         _imGuizmo.ConfirmAction = ImGuizmoConfirmAction.MouseUp;
