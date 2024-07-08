@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace HaroohiePals.Gui.Viewport;
 
-public class Gizmo
+public sealed class Gizmo
 {
     public GizmoKeyBindings KeyBindings = new();
 
@@ -19,18 +19,15 @@ public class Gizmo
     public IViewportCollision ViewportCollision;
 
     public bool Started { get; private set; } = false;
-
-    public bool IsOrthographic = false;
+    public bool IsOrthographic { get; set; } = false;
     public bool IsUsing => Started || _imGuizmo.IsUsing;
     public bool IsOver => _imGuizmo.IsOver();
-
     public bool IsUsingDrawTool => DrawTool is { IsUsing: true };
 
     private readonly ImGuizmo _imGuizmo = new();
+    private readonly RenderGroupScene _renderGroupScene;
     private readonly Dictionary<(object obj, int subIndex), Transform> _oldTransforms = new();
     private readonly Dictionary<(object obj, int subIndex), Transform> _currentTransforms = new();
-
-    private readonly RenderGroupScene _renderGroupScene;
 
     private string _inputOverrideValue = "";
     private Vector3d _oldAveragePos = Vector3.Zero;

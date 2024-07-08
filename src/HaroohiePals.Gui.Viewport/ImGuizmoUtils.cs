@@ -24,7 +24,7 @@ internal static class ImGuizmoUtils
         float numer = Vector3.Dot(plane.Xyz, rOrigin) - plane.W;
         float denom = Vector3.Dot(plane.Xyz, rVector);
 
-        if (MathF.Abs(denom) < ImGuizmoConsts.FltEpsilon) // normal is orthogonal to vector, cant intersect
+        if (MathF.Abs(denom) < ImGuizmoConsts.FLT_EPSILON) // normal is orthogonal to vector, cant intersect
             return -1.0f;
 
         return -(numer / denom);
@@ -40,8 +40,8 @@ internal static class ImGuizmoUtils
         float mox = (io.MousePos.X - position.X) / size.X * 2f - 1f;
         float moy = (1f - (io.MousePos.Y - position.Y) / size.Y) * 2f - 1f;
 
-        float zNear = /*gContext.mReversed*/false ? 1f - ImGuizmoConsts.FltEpsilon : 0f;
-        float zFar = /*gContext.mReversed*/false ? 0f : 1f - ImGuizmoConsts.FltEpsilon;
+        float zNear = /*gContext.mReversed*/false ? 1f - ImGuizmoConsts.FLT_EPSILON : 0f;
+        float zFar = /*gContext.mReversed*/false ? 0f : 1f - ImGuizmoConsts.FLT_EPSILON;
 
         rayOrigin = Vector3.TransformPerspective((mox, moy, zNear), mViewProjInverse);
         var rayEnd = Vector3.TransformPerspective((mox, moy, zFar), mViewProjInverse);
@@ -209,9 +209,9 @@ internal static class ImGuizmoUtils
 
         matrix.OrthoNormalize();
 
-        rotation[0] = ImGuizmoConsts.RadToDeg * MathF.Atan2( matrix[1,2], matrix[2,2]);
-        rotation[1] = ImGuizmoConsts.RadToDeg * MathF.Atan2(-matrix[0,2], MathF.Sqrt(matrix[1,2] * matrix[1,2] + matrix[2,2] * matrix[2,2]));
-        rotation[2] = ImGuizmoConsts.RadToDeg * MathF.Atan2( matrix[0,1], matrix[0,0]);
+        rotation[0] = ImGuizmoConsts.RAD_TO_DEG * MathF.Atan2( matrix[1,2], matrix[2,2]);
+        rotation[1] = ImGuizmoConsts.RAD_TO_DEG * MathF.Atan2(-matrix[0,2], MathF.Sqrt(matrix[1,2] * matrix[1,2] + matrix[2,2] * matrix[2,2]));
+        rotation[2] = ImGuizmoConsts.RAD_TO_DEG * MathF.Atan2( matrix[0,1], matrix[0,0]);
 
         translation[0] = matrix.Row3.X;
         translation[1] = matrix.Row3.Y;
