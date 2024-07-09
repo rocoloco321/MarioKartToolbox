@@ -29,8 +29,8 @@ internal class AreaShapeRenderGroup : RenderGroup, IColoredRenderGroup, IDisposa
     {
         Color = color;
         _collection = collection;
-        _cylinderRenderer = rendererFactory.CreateCylinderAreaRenderer(render2d);
-        _boxRenderer = rendererFactory.CreateBoxAreaRenderer(render2d);
+        _cylinderRenderer = rendererFactory.CreateCylinderAreaRenderer(false);
+        _boxRenderer = rendererFactory.CreateBoxAreaRenderer(false);
     }
 
     private InstancedPoint[] SetupPoints(ViewportContext context, IEnumerable<MkdsArea> visibleAreas, MkdsAreaShapeType shape)
