@@ -32,7 +32,7 @@ public sealed class Gizmo
     private string _inputOverrideValue = "";
     private Vector3d _oldAveragePos = Vector3.Zero;
     private Vector3d _currentRotation = Vector3.Zero;
-    private AxisAlignedBoundingBox? _currentBounds = null;
+    private Box3d? _currentBounds = null;
 
     public Gizmo(RenderGroupScene renderGroupScene)
     {
@@ -182,8 +182,8 @@ public sealed class Gizmo
 
         if (Tool == GizmoTool.Scale && _currentBounds is not null)
         {
-            bb = [(float)_currentBounds?.Minimum.X, (float)_currentBounds?.Minimum.Y, (float)_currentBounds?.Minimum.Z,
-                  (float)_currentBounds?.Maximum.X, (float)_currentBounds?.Maximum.Y, (float)_currentBounds?.Maximum.Z];
+            bb = [(float)_currentBounds?.Min.X, (float)_currentBounds?.Min.Y, (float)_currentBounds?.Min.Z,
+                  (float)_currentBounds?.Max.X, (float)_currentBounds?.Max.Y, (float)_currentBounds?.Max.Z];
         }
 
         var mtx = Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_currentRotation.X)) *

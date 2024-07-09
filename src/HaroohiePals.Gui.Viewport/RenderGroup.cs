@@ -1,4 +1,5 @@
 ﻿using HaroohiePals.Mathematics;
+using OpenTK.Mathematics;
 
 namespace HaroohiePals.Gui.Viewport;
 
@@ -21,9 +22,9 @@ public abstract class RenderGroup
     public virtual bool TrySetObjectTransform(object obj, int subIndex, in Transform transform) 
         => false;
 
-    public virtual bool TryGetLocalObjectBounds(object obj, int subIndex, out AxisAlignedBoundingBox bounds)
+    public virtual bool TryGetLocalObjectBounds(object obj, int subIndex, out Box3d bounds)
     {
-        bounds = AxisAlignedBoundingBox.Zero;
+        bounds = new Box3d();
         return false;
     }
 

@@ -1,4 +1,5 @@
 ﻿using HaroohiePals.Mathematics;
+using OpenTK.Mathematics;
 using System.Collections;
 
 namespace HaroohiePals.Gui.Viewport;
@@ -56,7 +57,7 @@ public class RenderGroupCollection : IList<RenderGroup>
         return false;
     }
 
-    public bool TryGetLocalObjectBounds(object obj, int subIndex, out AxisAlignedBoundingBox bounds)
+    public bool TryGetLocalObjectBounds(object obj, int subIndex, out Box3d bounds)
     {
         foreach (var g in _renderGroups)
         {
@@ -64,7 +65,7 @@ public class RenderGroupCollection : IList<RenderGroup>
                 return true;
         }
 
-        bounds = AxisAlignedBoundingBox.Zero;
+        bounds = new Box3d();
         return false;
     }
 

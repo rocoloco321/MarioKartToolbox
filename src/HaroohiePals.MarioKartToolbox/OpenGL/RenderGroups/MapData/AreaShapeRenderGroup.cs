@@ -6,6 +6,7 @@ using HaroohiePals.Mathematics;
 using HaroohiePals.NitroKart.Extensions;
 using HaroohiePals.NitroKart.MapData;
 using HaroohiePals.NitroKart.MapData.Intermediate.Sections;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -92,11 +93,11 @@ internal class AreaShapeRenderGroup : RenderGroup, IColoredRenderGroup, IDisposa
         return true;
     }
 
-    public override bool TryGetLocalObjectBounds(object obj, int subIndex, out AxisAlignedBoundingBox bounds)
+    public override bool TryGetLocalObjectBounds(object obj, int subIndex, out Box3d bounds)
     {
         if (obj is not MkdsArea area)
         {
-            bounds = AxisAlignedBoundingBox.Zero;
+            bounds = new Box3d();
             return false;
         }
 

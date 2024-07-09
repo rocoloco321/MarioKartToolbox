@@ -97,7 +97,7 @@ public static class AreaExtensions
         }
     }
 
-    public static AxisAlignedBoundingBox GetLocalBounds(this MkdsArea area)
+    public static Box3d GetLocalBounds(this MkdsArea area)
     {
         var size = Vector3d.Zero;
 
@@ -105,13 +105,13 @@ public static class AreaExtensions
         {
             case MkdsAreaShapeType.Box:
                 size = area.LengthVector * BaseSize;
-                return new AxisAlignedBoundingBox(new(-size.X, 0, -size.Z), new(size.X, size.Y * 2, size.Z));
+                return new Box3d(new(-size.X, 0, -size.Z), new(size.X, size.Y * 2, size.Z));
             case MkdsAreaShapeType.Cylinder:
                 size = new Vector3d(
                     area.LengthVector.X * BaseSize.X,
                     area.LengthVector.Y * BaseSize.Y,
                     area.LengthVector.X * BaseSize.Z);
-                return new AxisAlignedBoundingBox(new(-size.X, -size.Y, -size.Z), new(size.X, size.Y, size.Z));
+                return new Box3d(new(-size.X, -size.Y, -size.Z), new(size.X, size.Y, size.Z));
             default:
                 throw new Exception(EXCEPTION_MESSAGE_UNKNOWN_SHAPE_TYPE);
         }
