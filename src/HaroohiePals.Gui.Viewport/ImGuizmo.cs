@@ -1100,7 +1100,7 @@ sealed class ImGuizmo
             }
 
             // draw bounds
-            byte anchorAlpha = (byte)(_context.Enabled ? 0xFF : 0x80);
+            uint boundsColor = GetColorU32(_context.Enabled ? ImGuizmoColor.LocalBounds : ImGuizmoColor.LocalBoundsDisabled);
 
             Matrix4 boundsMVP = _context.ModelSource * _context.ViewProjection;
 
@@ -1110,9 +1110,8 @@ sealed class ImGuizmo
                 var worldBound2 = ImGuizmoUtils.WorldToPos(aabb[(i + 1) % 4].Xyz, boundsMVP, (_context.X, _context.Y), (_context.Width, _context.Height));
 
                 //if (!IsInContextRect(worldBound1) || !IsInContextRect(worldBound2))
-                //{
                 //    continue;
-                //}
+
                 float boundDistance = MathF.Sqrt((worldBound1 - worldBound2).LengthSquared());
                 int stepCount = (int)(boundDistance / 10f);
                 stepCount = Math.Min(stepCount, 1000);
@@ -1123,13 +1122,12 @@ sealed class ImGuizmo
                     float t2 = j * stepLength + stepLength * 0.5f;
                     var worldBoundSS1 = System.Numerics.Vector2.Lerp(worldBound1, worldBound2, t1);
                     var worldBoundSS2 = System.Numerics.Vector2.Lerp(worldBound1, worldBound2, t2);
-                    //drawList.AddLine(worldBoundSS1, worldBoundSS2, IM_COL32(0, 0, 0, 0) + anchorAlpha, 3.f);
-                    drawList.AddLine(worldBoundSS1, worldBoundSS2, 0xAAAAAA00 + anchorAlpha, 2f);
+                    drawList.AddLine(worldBoundSS1, worldBoundSS2, boundsColor, _context.Style.LocalBoundsLineThickness);
                 }
                 var midPoint = (aabb[i] + aabb[(i + 1) % 4]) * 0.5f;
                 var midBound = ImGuizmoUtils.WorldToPos(midPoint.Xyz, boundsMVP, (_context.X, _context.Y), (_context.Width, _context.Height));
-                float anchorBigRadius = 8f;
-                float anchorSmallRadius = 6f;
+                float anchorBigRadius = _context.Style.LocalBoundsAnchorBigRadius;
+                float anchorSmallRadius = _context.Style.LocalBoundsAnchorSmallRadius;
                 bool overBigAnchor = (worldBound1 - io.MousePos).LengthSquared() <= (anchorBigRadius * anchorBigRadius);
                 bool overSmallAnchor = (midBound - io.MousePos).LengthSquared() <= (anchorBigRadius * anchorBigRadius);
 
@@ -1155,15 +1153,16 @@ sealed class ImGuizmo
                 }
 
                 uint selectionColor = GetColorU32(ImGuizmoColor.Selection);
+                uint borderColor = GetColorU32(ImGuizmoColor.LocalBoundsCircleBorder);
 
-                uint bigAnchorColor = overBigAnchor ? selectionColor : (0xAAAAAA00 + anchorAlpha);
-                uint smallAnchorColor = overSmallAnchor ? selectionColor : (0xAAAAAA00 + anchorAlpha);
+                uint bigAnchorColor = overBigAnchor ? selectionColor : boundsColor;
+                uint smallAnchorColor = overSmallAnchor ? selectionColor : boundsColor;
 
-                drawList.AddCircleFilled(worldBound1, anchorBigRadius, 0x000000FF);
-                drawList.AddCircleFilled(worldBound1, anchorBigRadius - 1.2f, bigAnchorColor);
+                drawList.AddCircleFilled(worldBound1, anchorBigRadius, borderColor);
+                drawList.AddCircleFilled(worldBound1, anchorBigRadius - _context.Style.LocalBoundsAnchorBorderLineThickness, bigAnchorColor);
 
-                drawList.AddCircleFilled(midBound, anchorSmallRadius, 0x000000FF);
-                drawList.AddCircleFilled(midBound, anchorSmallRadius - 1.2f, smallAnchorColor);
+                drawList.AddCircleFilled(midBound, anchorSmallRadius, borderColor);
+                drawList.AddCircleFilled(midBound, anchorSmallRadius - _context.Style.LocalBoundsAnchorBorderLineThickness, smallAnchorColor);
 
                 int oppositeIndex = (i + 2) % 4;
 

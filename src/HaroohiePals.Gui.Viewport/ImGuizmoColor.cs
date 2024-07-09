@@ -17,5 +17,8 @@ enum ImGuizmoColor : int
     HatchedAxisLines,
     Text,
     TextShadow,
+    LocalBounds,
+    LocalBoundsDisabled,
+    LocalBoundsCircleBorder,
     Count
 };
