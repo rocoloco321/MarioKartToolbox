@@ -28,7 +28,7 @@ static class ImGuizmoUtils
     }
 
     public static void ComputeCameraRay(out Vector3 rayOrigin, out Vector3 rayDir, Vector2 position, Vector2 size,
-        Matrix4 projMtx, Matrix4 viewMtx)
+        Matrix4 projMtx, Matrix4 viewMtx, bool reversed)
     {
         var io = ImGui.GetIO();
 
@@ -37,8 +37,8 @@ static class ImGuizmoUtils
         float mox = (io.MousePos.X - position.X) / size.X * 2f - 1f;
         float moy = (1f - (io.MousePos.Y - position.Y) / size.Y) * 2f - 1f;
 
-        float zNear = /*gContext.mReversed*/false ? 1f - ImGuizmoConsts.FLT_EPSILON : 0f;
-        float zFar = /*gContext.mReversed*/false ? 0f : 1f - ImGuizmoConsts.FLT_EPSILON;
+        float zNear = reversed ? 1f - ImGuizmoConsts.FLT_EPSILON : 0f;
+        float zFar = reversed ? 0f : 1f - ImGuizmoConsts.FLT_EPSILON;
 
         rayOrigin = Vector3.TransformPerspective((mox, moy, zNear), mViewProjInverse);
         var rayEnd = Vector3.TransformPerspective((mox, moy, zFar), mViewProjInverse);
