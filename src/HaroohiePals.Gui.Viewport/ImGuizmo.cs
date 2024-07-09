@@ -108,7 +108,8 @@ sealed class ImGuizmo
     public void SetOrthographic(bool isOrthographic)
         => _context.IsOrthographic = isOrthographic;
 
-    public bool Manipulate(Matrix4 view, Matrix4 projection, ImGuizmoOperation operation, ImGuizmoMode mode, ref Matrix4 matrix, out Matrix4 deltaMatrix, Vector3? snap = null, float[] localBounds = null, Vector3? boundsSnap = null)
+    public bool Manipulate(Matrix4 view, Matrix4 projection, ImGuizmoOperation operation, ImGuizmoMode mode, 
+        ref Matrix4 matrix, out Matrix4 deltaMatrix, Vector3? snap = null, Box3d? localBounds = null, Vector3? boundsSnap = null)
     {
         // set delta to identity
         deltaMatrix = Matrix4.Identity;
@@ -138,9 +139,9 @@ sealed class ImGuizmo
                 }
             }
 
-            if (localBounds != null && localBounds.Length == 6 && !_context.IsUsing)
+            if (localBounds is not null && !_context.IsUsing)
             {
-                manipulated = HandleAndDrawLocalBounds(localBounds, ref matrix, boundsSnap, operation);
+                manipulated = HandleAndDrawLocalBounds(localBounds.Value, ref matrix, boundsSnap, operation);
             }
 
             _context.Operation = operation;
@@ -1008,8 +1009,14 @@ sealed class ImGuizmo
         }
     }
 
-    private bool HandleAndDrawLocalBounds(float[] bounds, ref Matrix4 matrix, Vector3? snapValues, ImGuizmoOperation operation)
+    private bool HandleAndDrawLocalBounds(Box3d localBounds, ref Matrix4 matrix, Vector3? snapValues, ImGuizmoOperation operation)
     {
+        float[] bounds = 
+        [
+            (float)localBounds.Min.X, (float)localBounds.Min.Y, (float)localBounds.Min.Z,
+            (float)localBounds.Max.X, (float)localBounds.Max.Y, (float)localBounds.Max.Z
+        ];
+
         bool modified = false;
 
         var io = ImGui.GetIO();

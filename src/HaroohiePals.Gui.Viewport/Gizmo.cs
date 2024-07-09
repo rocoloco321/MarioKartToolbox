@@ -160,15 +160,16 @@ public sealed class Gizmo
         DrawInputOverrideValue();
 
         var guizmoOperation = _guizmoOperation;
+        var contentPos = ImGui.GetWindowPos() + ImGui.GetWindowContentRegionMin();
 
         _imGuizmo.SetOrthographic(IsOrthographic);
         _imGuizmo.BeginFrame();
         _imGuizmo.SetDrawlist();
-
-        var contentPos = ImGui.GetWindowPos() + ImGui.GetWindowContentRegionMin();
         _imGuizmo.SetRect(contentPos.X, contentPos.Y, context.ViewportSize.X, context.ViewportSize.Y);
 
-        UpdateCurrentTransformsAndBounds(context, context.SceneObjectHolder.SelectionSize == 1);
+        bool useLocalBounds = context.SceneObjectHolder.SelectionSize == 1 && Tool == GizmoTool.Scale;
+
+        UpdateCurrentTransformsAndBounds(context, useLocalBounds);
 
         var averagePos = GetAveragePosition();
 
@@ -178,23 +179,15 @@ public sealed class Gizmo
         if (context.SceneObjectHolder.SelectionSize == 1)
             _currentRotation = _currentTransforms.First().Value.Rotation;
 
-        float[] bb = null;
-
-        if (Tool == GizmoTool.Scale && _currentBounds is not null)
-        {
-            bb = [(float)_currentBounds?.Min.X, (float)_currentBounds?.Min.Y, (float)_currentBounds?.Min.Z,
-                  (float)_currentBounds?.Max.X, (float)_currentBounds?.Max.Y, (float)_currentBounds?.Max.Z];
-        }
-
         var mtx = Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_currentRotation.X)) *
                   Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(_currentRotation.Y)) *
                   Matrix4.CreateRotationZ((float)MathHelper.DegreesToRadians(_currentRotation.Z)) *
                   Matrix4.CreateTranslation((Vector3)averagePos);
 
-        var actualMode = _currentTransforms.Count > 1 ? ImGuizmoMode.World : Mode;
+        var actualMode = context.SceneObjectHolder.SelectionSize > 1 ? ImGuizmoMode.World : Mode;
 
         if (!_imGuizmo.Manipulate(context.ViewMatrix, context.ProjectionMatrix, guizmoOperation, actualMode,
-            ref mtx, out var deltaMtx, null, bb))
+            ref mtx, out var deltaMtx, null, _currentBounds))
             return;
 
         if (!Started)
