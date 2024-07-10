@@ -2,16 +2,15 @@
 using HaroohiePals.NitroKart.MapData;
 using HaroohiePals.NitroKart.MapData.Intermediate.Sections;
 using OpenTK.Mathematics;
-using System.Drawing;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace HaroohiePals.NitroKart.Extensions;
 
-public static class AreaExtensions
+public static class MkdsAreaExtensions
 {
     private const string EXCEPTION_MESSAGE_UNKNOWN_SHAPE_TYPE = "Unknown shape type for MkdsArea";
 
-    private static readonly Vector3d BaseSize = new Vector3(50, 50, 50);
+    private static readonly Box3d BoxUnitBounds = new Box3d(new(-50, 0, -50), new(50, 100, 50));
+    private static readonly Box3d CylinderUnitBounds = new Box3d(new(-50, -50, -50), new(50, 50, 50));
 
     public static Vector3d GetRotation(this MkdsArea area)
     {
@@ -55,14 +54,14 @@ public static class AreaExtensions
         {
             case MkdsAreaShapeType.Box:
                 return
-                    Matrix4.CreateScale((Vector3)(area.LengthVector * BaseSize)) *
+                    Matrix4.CreateScale((Vector3)(area.LengthVector * (BoxUnitBounds.Size / 2.0))) *
                     rotMatrix *
                     Matrix4.CreateTranslation((Vector3)area.Position);
 
             case MkdsAreaShapeType.Cylinder:
-                var lengthVec = (Vector3)new Vector3d(area.LengthVector.X, area.LengthVector.Y, area.LengthVector.X);
+                var lengthVec = new Vector3d(area.LengthVector.X, area.LengthVector.Y, area.LengthVector.X);
                 return
-                    Matrix4.CreateScale(lengthVec * (Vector3)BaseSize) *
+                    Matrix4.CreateScale((Vector3)(lengthVec * (CylinderUnitBounds.Size / 2.0))) *
                     rotMatrix *
                     Matrix4.CreateTranslation((Vector3)area.Position);
             default:
@@ -82,15 +81,13 @@ public static class AreaExtensions
         area.SetRotation(transform.Rotation);
 
         var scale = transform.Scale;
-
         switch (area.Shape)
         {
             case MkdsAreaShapeType.Box:
-                area.LengthVector = scale / BaseSize;
+                area.LengthVector = scale / (BoxUnitBounds.Size / 2.0);
                 break;
             case MkdsAreaShapeType.Cylinder:
-                // For cylinder, scale X and Z are the same
-                area.LengthVector = new Vector3d(scale.X / BaseSize.X, scale.Y / BaseSize.Y, scale.X / BaseSize.Z);
+                area.LengthVector = scale / (CylinderUnitBounds.Size / 2.0);
                 break;
             default:
                 throw new Exception(EXCEPTION_MESSAGE_UNKNOWN_SHAPE_TYPE);
@@ -99,22 +96,15 @@ public static class AreaExtensions
 
     public static Box3d GetLocalBounds(this MkdsArea area)
     {
-        var size = Vector3d.Zero;
-
         switch (area.Shape)
         {
             case MkdsAreaShapeType.Box:
-                size = area.LengthVector * BaseSize;
-                return new Box3d(new(-size.X, 0, -size.Z), new(size.X, size.Y * 2, size.Z));
+                return BoxUnitBounds.Scaled(area.LengthVector, Vector3d.Zero);
             case MkdsAreaShapeType.Cylinder:
-                size = new Vector3d(
-                    area.LengthVector.X * BaseSize.X,
-                    area.LengthVector.Y * BaseSize.Y,
-                    area.LengthVector.X * BaseSize.Z);
-                return new Box3d(new(-size.X, -size.Y, -size.Z), new(size.X, size.Y, size.Z));
+                return CylinderUnitBounds.Scaled(area.LengthVector, Vector3d.Zero);
             default:
                 throw new Exception(EXCEPTION_MESSAGE_UNKNOWN_SHAPE_TYPE);
         }
-        
+
     }
 }
