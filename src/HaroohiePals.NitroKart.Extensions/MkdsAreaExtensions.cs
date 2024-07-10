@@ -80,14 +80,13 @@ public static class MkdsAreaExtensions
         area.Position = transform.Translation;
         area.SetRotation(transform.Rotation);
 
-        var scale = transform.Scale;
         switch (area.Shape)
         {
             case MkdsAreaShapeType.Box:
-                area.LengthVector = scale / (BoxUnitBounds.Size / 2.0);
+                area.LengthVector = transform.Scale / (BoxUnitBounds.Size / 2.0);
                 break;
             case MkdsAreaShapeType.Cylinder:
-                area.LengthVector = scale / (CylinderUnitBounds.Size / 2.0);
+                area.LengthVector = transform.Scale / (CylinderUnitBounds.Size / 2.0);
                 break;
             default:
                 throw new Exception(EXCEPTION_MESSAGE_UNKNOWN_SHAPE_TYPE);
