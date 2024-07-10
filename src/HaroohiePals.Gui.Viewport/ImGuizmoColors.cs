@@ -2,7 +2,7 @@
 
 namespace HaroohiePals.Gui.Viewport;
 
-public record struct ImGuizmoColors()
+public class ImGuizmoColors
 {
     public Color DirectionX = Color.FromArgb(170, 0, 0);
     public Color DirectionY = Color.FromArgb(0, 170, 0);

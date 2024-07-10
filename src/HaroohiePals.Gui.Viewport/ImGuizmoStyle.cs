@@ -1,6 +1,6 @@
 ﻿namespace HaroohiePals.Gui.Viewport;
 
-public record struct ImGuizmoStyle()
+public class ImGuizmoStyle
 {
     /// <summary>
     /// Colors of the various controls.
