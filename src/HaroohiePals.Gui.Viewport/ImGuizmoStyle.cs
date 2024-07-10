@@ -1,51 +1,11 @@
-﻿using OpenTK.Mathematics;
+﻿namespace HaroohiePals.Gui.Viewport;
 
-namespace HaroohiePals.Gui.Viewport;
-
-class ImGuizmoStyle
+public record struct ImGuizmoStyle()
 {
     /// <summary>
-    /// Colors of the various controls. Access using <see cref="ImGuizmoColor"></see>.
+    /// Colors of the various controls.
     /// </summary>
-    public Color4[] Colors =
-    [
-        //Colors[DIRECTION_X]
-        new Color4(0.666f, 0.000f, 0.000f, 1.000f),
-        //Colors[DIRECTION_Y]
-        new Color4(0.000f, 0.666f, 0.000f, 1.000f),
-        //Colors[DIRECTION_Z]
-        new Color4(0.000f, 0.000f, 0.666f, 1.000f),
-        //Colors[PLANE_X]
-        new Color4(0.666f, 0.000f, 0.000f, 0.380f),
-        //Colors[PLANE_Y]
-        new Color4(0.000f, 0.666f, 0.000f, 0.380f),
-        //Colors[PLANE_Z]
-        new Color4(0.000f, 0.000f, 0.666f, 0.380f),
-        //Colors[SELECTION]
-        new Color4(1.000f, 0.500f, 0.062f, 0.541f),
-        //Colors[INACTIVE]
-        new Color4(0.600f, 0.600f, 0.600f, 0.600f),
-        //Colors[TRANSLATION_LINE]
-        new Color4(0.666f, 0.666f, 0.666f, 0.666f),
-        //Colors[SCALE_LINE]
-        new Color4(0.250f, 0.250f, 0.250f, 1.000f),
-        //Colors[ROTATION_USING_BORDER]
-        new Color4(1.000f, 0.500f, 0.062f, 1.000f),
-        //Colors[ROTATION_USING_FILL]
-        new Color4(1.000f, 0.500f, 0.062f, 0.500f),
-        //Colors[HATCHED_AXIS_LINES]
-        new Color4(0.000f, 0.000f, 0.000f, 0.500f),
-        //Colors[TEXT]
-        new Color4(1.000f, 1.000f, 1.000f, 1.000f),
-        //Colors[TEXT_SHADOW]
-        new Color4(0.000f, 0.000f, 0.000f, 1.000f),
-        //Colors[LOCAL_BOUNDS]
-        new Color4(0.666f, 0.666f, 0.666f, 1.000f),
-        //Colors[LOCAL_BOUNDS_DISABLED]
-        new Color4(0.666f, 0.666f, 0.666f, 0.500f),
-        //Colors[LOCAL_BOUNDS_CIRCLE_BORDER]
-        Color4.Black
-    ];
+    public ImGuizmoColors Colors = new();
     /// <summary>
     /// Thickness of lines for translation gizmo
     /// </summary>

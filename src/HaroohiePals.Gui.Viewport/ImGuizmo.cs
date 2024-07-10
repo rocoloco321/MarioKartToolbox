@@ -1,5 +1,7 @@
 ﻿using ImGuiNET;
 using OpenTK.Mathematics;
+using System.Drawing;
+using System.Security.Principal;
 
 namespace HaroohiePals.Gui.Viewport;
 
@@ -297,38 +299,55 @@ sealed class ImGuizmo
         ImGuizmoUtils.ComputeCameraRay(out _context.RayOrigin, out _context.RayVector, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height), _context.ProjectionMat, _context.ViewMat, _context.Reversed);
     }
 
+    private uint ComputeDirectionColor(int index) => index switch
+    {
+        0 => GetColorU32(_context.Style.Colors.DirectionX),
+        1 => GetColorU32(_context.Style.Colors.DirectionY),
+        2 => GetColorU32(_context.Style.Colors.DirectionZ),
+        _ => GetColorU32(_context.Style.Colors.DirectionX),
+    };
+
+    private uint ComputePlaneColor(int index) => index switch
+    {
+        0 => GetColorU32(_context.Style.Colors.PlaneX),
+        1 => GetColorU32(_context.Style.Colors.PlaneY),
+        2 => GetColorU32(_context.Style.Colors.PlaneZ),
+        _ => GetColorU32(_context.Style.Colors.PlaneX),
+    };
+
     private uint[] ComputeColors(ImGuizmoMoveType type, ImGuizmoOperation operation)
     {
         uint[] colors = new uint[7];
 
         if (_context.Enabled)
         {
-            uint selectionColor = GetColorU32(ImGuizmoColor.Selection);
+            uint selectionColor = GetColorU32(_context.Style.Colors.Selection);
+            uint unselectedColor = GetColorU32(_context.Style.Colors.Unselected);
 
             switch (operation)
             {
                 case ImGuizmoOperation.Translate:
-                    colors[0] = (type == ImGuizmoMoveType.MoveScreen) ? selectionColor : 0xFFFFFFFF;
+                    colors[0] = (type == ImGuizmoMoveType.MoveScreen) ? selectionColor : unselectedColor;
                     for (int i = 0; i < 3; i++)
                     {
-                        colors[i + 1] = (type == (ImGuizmoMoveType.MoveX + i)) ? selectionColor : GetColorU32(ImGuizmoColor.DirectionX + i);
-                        colors[i + 4] = (type == (ImGuizmoMoveType.MoveYZ + i)) ? selectionColor : GetColorU32(ImGuizmoColor.PlaneX + i);
+                        colors[i + 1] = (type == (ImGuizmoMoveType.MoveX + i)) ? selectionColor : ComputeDirectionColor(i);
+                        colors[i + 4] = (type == (ImGuizmoMoveType.MoveYZ + i)) ? selectionColor : ComputePlaneColor(i);
                         colors[i + 4] = (type == ImGuizmoMoveType.MoveScreen) ? selectionColor : colors[i + 4];
                     }
                     break;
                 case ImGuizmoOperation.Rotate:
-                    colors[0] = (type == ImGuizmoMoveType.RotateScreen) ? selectionColor : 0xFFFFFFFF;
+                    colors[0] = (type == ImGuizmoMoveType.RotateScreen) ? selectionColor : unselectedColor;
                     for (int i = 0; i < 3; i++)
                     {
-                        colors[i + 1] = (type == (ImGuizmoMoveType.RotateX + i)) ? selectionColor : GetColorU32(ImGuizmoColor.DirectionX + i);
+                        colors[i + 1] = (type == (ImGuizmoMoveType.RotateX + i)) ? selectionColor : ComputeDirectionColor(i);
                     }
                     break;
                 case ImGuizmoOperation.ScaleU:
                 case ImGuizmoOperation.Scale:
-                    colors[0] = (type == ImGuizmoMoveType.ScaleXYZ) ? selectionColor : 0xFFFFFFFF;
+                    colors[0] = (type == ImGuizmoMoveType.ScaleXYZ) ? selectionColor : unselectedColor;
                     for (int i = 0; i < 3; i++)
                     {
-                        colors[i + 1] = (type == (ImGuizmoMoveType.ScaleX + i)) ? selectionColor : GetColorU32(ImGuizmoColor.DirectionX + i);
+                        colors[i + 1] = (type == (ImGuizmoMoveType.ScaleX + i)) ? selectionColor : ComputeDirectionColor(i);
                     }
                     break;
                 // note: this internal function is only called with three possible values for operation
@@ -338,7 +357,7 @@ sealed class ImGuizmo
         }
         else
         {
-            uint inactiveColor = GetColorU32(ImGuizmoColor.Inactive);
+            uint inactiveColor = GetColorU32(_context.Style.Colors.Inactive);
             for (int i = 0; i < 7; i++)
             {
                 colors[i] = inactiveColor;
@@ -348,11 +367,8 @@ sealed class ImGuizmo
         return colors;
     }
 
-    private uint GetColorU32(ImGuizmoColor color)
-    {
-        var colorVec = _context.Style.Colors[(int)color];
-        return ImGui.ColorConvertFloat4ToU32(new System.Numerics.Vector4(colorVec.R, colorVec.G, colorVec.B, colorVec.A));
-    }
+    private uint GetColorU32(Color color)
+        => ImGuiEx.ColorConvertColorToU32(color);
 
     private ImGuizmoMoveType GetMoveType(ImGuizmoOperation op, out Vector3 gizmoHitProportion)
     {
@@ -722,8 +738,8 @@ sealed class ImGuizmo
 
             int componentInfoIndex = (type - ImGuizmoMoveType.ScaleX) * 3;
             string formattedString = string.Format(ImGuizmoConsts.ScaleInfoMask[type - ImGuizmoMoveType.ScaleX], scaleDisplay[ImGuizmoConsts.TranslationInfoIndex[componentInfoIndex]]);
-            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(ImGuizmoColor.TextShadow), formattedString);
-            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(ImGuizmoColor.Text), formattedString);
+            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(_context.Style.Colors.TextShadow), formattedString);
+            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(_context.Style.Colors.Text), formattedString);
         }
     }
 
@@ -769,7 +785,7 @@ sealed class ImGuizmo
 
                     if (_context.IsUsing && (_context.ActualID == -1 || _context.ActualID == _context.EditingID))
                     {
-                        uint scaleLineColor = GetColorU32(ImGuizmoColor.ScaleLine);
+                        uint scaleLineColor = GetColorU32(_context.Style.Colors.ScaleLine);
                         drawList.AddLine(baseSSpace, worldDirSSpaceNoScale, scaleLineColor, _context.Style.ScaleLineThickness);
                         drawList.AddCircleFilled(worldDirSSpaceNoScale, _context.Style.ScaleLineCircleSize, scaleLineColor);
                     }
@@ -798,8 +814,8 @@ sealed class ImGuizmo
 
             int componentInfoIndex = (type - ImGuizmoMoveType.ScaleX) * 3;
             string formattedString = string.Format(ImGuizmoConsts.ScaleInfoMask[type - ImGuizmoMoveType.ScaleX], scaleDisplay[ImGuizmoConsts.TranslationInfoIndex[componentInfoIndex]]);
-            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(ImGuizmoColor.TextShadow), formattedString);
-            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(ImGuizmoColor.Text), formattedString);
+            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(_context.Style.Colors.TextShadow), formattedString);
+            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(_context.Style.Colors.Text), formattedString);
         }
     }
 
@@ -869,7 +885,7 @@ sealed class ImGuizmo
                         var cornerWorldPos = (dirPlaneX * ImGuizmoConsts.QuadUVs[j * 2] + dirPlaneY * ImGuizmoConsts.QuadUVs[j * 2 + 1]) * _context.ScreenFactor;
                         screenQuadPts[j] = ImGuizmoUtils.WorldToPos(cornerWorldPos, _context.MVP, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
                     }
-                    drawList.AddPolyline(ref screenQuadPts[0], 4, GetColorU32(ImGuizmoColor.DirectionX + i), ImDrawFlags.Closed, 1.0f);
+                    drawList.AddPolyline(ref screenQuadPts[0], 4, ComputeDirectionColor(i), ImDrawFlags.Closed, 1.0f);
                     drawList.AddConvexPolyFilled(ref screenQuadPts[0], 4, colors[i + 4]);
                 }
             }
@@ -880,7 +896,7 @@ sealed class ImGuizmo
 
         if (_context.IsUsing && (_context.ActualID == -1 || _context.ActualID == _context.EditingID) && IsTranslateType(type))
         {
-            uint translationLineColor = GetColorU32(ImGuizmoColor.TranslationLine);
+            uint translationLineColor = GetColorU32(_context.Style.Colors.TranslationLine);
 
             var sourcePosOnScreen = ImGuizmoUtils.WorldToPos(_context.MatrixOrigin, _context.ViewProjection, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
             var destinationPosOnScreen = ImGuizmoUtils.WorldToPos(_context.Model.Row3.Xyz, _context.ViewProjection, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
@@ -899,8 +915,8 @@ sealed class ImGuizmo
                 deltaInfo[ImGuizmoConsts.TranslationInfoIndex[componentInfoIndex + 1]],
                 deltaInfo[ImGuizmoConsts.TranslationInfoIndex[componentInfoIndex + 2]]);
 
-            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(ImGuizmoColor.TextShadow), formattedString);
-            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(ImGuizmoColor.Text), formattedString);
+            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(_context.Style.Colors.TextShadow), formattedString);
+            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(_context.Style.Colors.Text), formattedString);
         }
     }
 
@@ -915,7 +931,7 @@ sealed class ImGuizmo
         {
             var baseSSpace2 = ImGuizmoUtils.WorldToPos(axis * 0.05f * (float)(j * 2) * _context.ScreenFactor, _context.MVP, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
             var worldDirSSpace2 = ImGuizmoUtils.WorldToPos(axis * 0.05f * (float)(j * 2 + 1) * _context.ScreenFactor, _context.MVP, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
-            _context.DrawList.AddLine(baseSSpace2, worldDirSSpace2, GetColorU32(ImGuizmoColor.HatchedAxisLines), _context.Style.HatchedAxisLineThickness);
+            _context.DrawList.AddLine(baseSSpace2, worldDirSSpace2, GetColorU32(_context.Style.Colors.HatchedAxisLines), _context.Style.HatchedAxisLineThickness);
         }
     }
 
@@ -997,13 +1013,13 @@ sealed class ImGuizmo
                 pos *= _context.ScreenFactor * ImGuizmoConsts.ROTATION_DISPLAY_FACTOR;
                 circlePos[i] = ImGuizmoUtils.WorldToPos(pos + _context.Model.Row3.Xyz, _context.ViewProjection, new Vector2(_context.X, _context.Y), new Vector2(_context.Width, _context.Height));
             }
-            drawList.AddConvexPolyFilled(ref circlePos[0], ImGuizmoConsts.HALF_CIRCLE_SEGMENT_COUNT, GetColorU32(ImGuizmoColor.RotationUsingFill));
-            drawList.AddPolyline(ref circlePos[0], ImGuizmoConsts.HALF_CIRCLE_SEGMENT_COUNT, GetColorU32(ImGuizmoColor.RotationUsingBorders), ImDrawFlags.None, _context.Style.RotationLineThickness);
+            drawList.AddConvexPolyFilled(ref circlePos[0], ImGuizmoConsts.HALF_CIRCLE_SEGMENT_COUNT, GetColorU32(_context.Style.Colors.RotationUsingFill));
+            drawList.AddPolyline(ref circlePos[0], ImGuizmoConsts.HALF_CIRCLE_SEGMENT_COUNT, GetColorU32(_context.Style.Colors.RotationUsingBorder), ImDrawFlags.None, _context.Style.RotationLineThickness);
 
             var destinationPosOnScreen = circlePos[1];
             string formattedString = string.Format(ImGuizmoConsts.RotationInfoMask[type - ImGuizmoMoveType.RotateX], (_context.RotationAngle / MathF.PI) * 180f, _context.RotationAngle);
-            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(ImGuizmoColor.TextShadow), formattedString);
-            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(ImGuizmoColor.Text), formattedString);
+            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(_context.Style.Colors.TextShadow), formattedString);
+            drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(_context.Style.Colors.Text), formattedString);
         }
     }
 
@@ -1100,7 +1116,7 @@ sealed class ImGuizmo
             }
 
             // draw bounds
-            uint boundsColor = GetColorU32(_context.Enabled ? ImGuizmoColor.LocalBounds : ImGuizmoColor.LocalBoundsDisabled);
+            uint boundsColor = GetColorU32(_context.Enabled ? _context.Style.Colors.LocalBounds : _context.Style.Colors.LocalBoundsDisabled);
 
             Matrix4 boundsMVP = _context.ModelSource * _context.ViewProjection;
 
@@ -1152,8 +1168,8 @@ sealed class ImGuizmo
                     overSmallAnchor = false;
                 }
 
-                uint selectionColor = GetColorU32(ImGuizmoColor.Selection);
-                uint borderColor = GetColorU32(ImGuizmoColor.LocalBoundsCircleBorder);
+                uint selectionColor = GetColorU32(_context.Style.Colors.Selection);
+                uint borderColor = GetColorU32(_context.Style.Colors.LocalBoundsCircleBorder);
 
                 uint bigAnchorColor = overBigAnchor ? selectionColor : boundsColor;
                 uint smallAnchorColor = overSmallAnchor ? selectionColor : boundsColor;
@@ -1277,8 +1293,8 @@ sealed class ImGuizmo
                    , (bounds[4] - bounds[1]) * _context.BoundsMatrix.Row1.Length * scale.Row1.Length
                    , (bounds[5] - bounds[2]) * _context.BoundsMatrix.Row2.Length * scale.Row2.Length
                 );
-                drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(ImGuizmoColor.TextShadow), formattedString);
-                drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(ImGuizmoColor.Text), formattedString);
+                drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 15, destinationPosOnScreen.Y + 15), GetColorU32(_context.Style.Colors.TextShadow), formattedString);
+                drawList.AddText(new System.Numerics.Vector2(destinationPosOnScreen.X + 14, destinationPosOnScreen.Y + 14), GetColorU32(_context.Style.Colors.Text), formattedString);
             }
 
             bool confirm = false;
