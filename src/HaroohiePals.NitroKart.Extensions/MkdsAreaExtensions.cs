@@ -104,6 +104,5 @@ public static class MkdsAreaExtensions
             default:
                 throw new Exception(EXCEPTION_MESSAGE_UNKNOWN_SHAPE_TYPE);
         }
-
     }
 }

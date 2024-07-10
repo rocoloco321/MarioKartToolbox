@@ -103,7 +103,7 @@ sealed class ImGuizmo
         _context.Width = width;
         _context.Height = height;
         _context.XMax = _context.X + _context.Width;
-        _context.YMax = _context.Y + _context.XMax;
+        _context.YMax = _context.Y + _context.Height;
         _context.DisplayRatio = width / height;
     }
 
@@ -1125,8 +1125,8 @@ sealed class ImGuizmo
                 var worldBound1 = ImGuizmoUtils.WorldToPos(aabb[i].Xyz, boundsMVP, (_context.X, _context.Y), (_context.Width, _context.Height));
                 var worldBound2 = ImGuizmoUtils.WorldToPos(aabb[(i + 1) % 4].Xyz, boundsMVP, (_context.X, _context.Y), (_context.Width, _context.Height));
 
-                //if (!IsInContextRect(worldBound1) || !IsInContextRect(worldBound2))
-                //    continue;
+                if (!IsInContextRect(worldBound1) || !IsInContextRect(worldBound2))
+                    continue;
 
                 float boundDistance = MathF.Sqrt((worldBound1 - worldBound2).LengthSquared());
                 int stepCount = (int)(boundDistance / 10f);
@@ -1773,8 +1773,8 @@ sealed class ImGuizmo
     }
 
     private bool IsInContextRect(System.Numerics.Vector2 p)
-    {
-        bool isWithin(float x, float y, float z) { return (x >= y) && (x <= z); }
-        return isWithin(p.X, _context.X, _context.XMax) && isWithin(p.Y, _context.Y, _context.YMax);
-    }
+        => IsWithin(p.X, _context.X, _context.XMax) && IsWithin(p.Y, _context.Y, _context.YMax);
+
+    private static bool IsWithin(float value, float min, float max)
+        => (value >= min) && (value <= max);
 }
