@@ -14,13 +14,13 @@ enum ImGuizmoOperation : uint
     ScaleY = (1u << 8),
     ScaleZ = (1u << 9),
     Bounds = (1u << 10),
-    ScaleXU = (1u << 11),
-    ScaleYU = (1u << 12),
-    ScaleZU = (1u << 13),
+    ScaleXUniversal = (1u << 11),
+    ScaleYUniversal = (1u << 12),
+    ScaleZUniversal = (1u << 13),
 
     Translate = TranslateX | TranslateY | TranslateZ,
     Rotate = RotateX | RotateY | RotateZ | RotateScreen,
     Scale = ScaleX | ScaleY | ScaleZ,
-    ScaleU = ScaleXU | ScaleYU | ScaleZU, // universal
-    Universal = Translate | Rotate | ScaleU
+    ScaleUniversal = ScaleXUniversal | ScaleYUniversal | ScaleZUniversal, // universal
+    Universal = Translate | Rotate | ScaleUniversal
 };

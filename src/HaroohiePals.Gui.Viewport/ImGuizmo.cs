@@ -342,7 +342,7 @@ sealed class ImGuizmo
                         colors[i + 1] = (type == (ImGuizmoMoveType.RotateX + i)) ? selectionColor : ComputeDirectionColor(i);
                     }
                     break;
-                case ImGuizmoOperation.ScaleU:
+                case ImGuizmoOperation.ScaleUniversal:
                 case ImGuizmoOperation.Scale:
                     colors[0] = (type == ImGuizmoMoveType.ScaleXYZ) ? selectionColor : unselectedColor;
                     for (int i = 0; i < 3; i++)
@@ -551,14 +551,14 @@ sealed class ImGuizmo
 
         var deltaScreen = new Vector3(io.MousePos.X - _context.ScreenSquareCenter.X, io.MousePos.Y - _context.ScreenSquareCenter.Y, 0f);
         float dist = deltaScreen.Length;
-        if (Contains(op, ImGuizmoOperation.ScaleU) && dist >= 17.0f && dist < 23.0f)
+        if (Contains(op, ImGuizmoOperation.ScaleUniversal) && dist >= 17.0f && dist < 23.0f)
         {
             type = ImGuizmoMoveType.ScaleXYZ;
         }
 
         for (int i = 0; i < 3 && type == ImGuizmoMoveType.None; i++)
         {
-            if (!Intersects(op, (ImGuizmoOperation)((int)ImGuizmoOperation.ScaleXU << i)))
+            if (!Intersects(op, (ImGuizmoOperation)((int)ImGuizmoOperation.ScaleXUniversal << i)))
             {
                 continue;
             }
@@ -689,13 +689,13 @@ sealed class ImGuizmo
     {
         var drawList = _context.DrawList;
 
-        if (!Intersects(op, ImGuizmoOperation.ScaleU))
+        if (!Intersects(op, ImGuizmoOperation.ScaleUniversal))
         {
             return;
         }
 
         // colors
-        uint[] colors = ComputeColors(type, ImGuizmoOperation.ScaleU);
+        uint[] colors = ComputeColors(type, ImGuizmoOperation.ScaleUniversal);
 
         // draw
         var scaleDisplay = new Vector3(1);
@@ -707,7 +707,7 @@ sealed class ImGuizmo
 
         for (int i = 0; i < 3; i++)
         {
-            if (!Intersects(op, (ImGuizmoOperation)((int)ImGuizmoOperation.ScaleXU << i)))
+            if (!Intersects(op, (ImGuizmoOperation)((int)ImGuizmoOperation.ScaleXUniversal << i)))
             {
                 continue;
             }
@@ -1447,7 +1447,7 @@ sealed class ImGuizmo
 
     private bool HandleScale(ref Matrix4 matrix, ref Matrix4 deltaMatrix, ImGuizmoOperation op, ref ImGuizmoMoveType type, Vector3? snap)
     {
-        if ((!Intersects(op, ImGuizmoOperation.Scale) && !Intersects(op, ImGuizmoOperation.ScaleU)) || type != ImGuizmoMoveType.None /*|| !_context.MouseOver*/)
+        if ((!Intersects(op, ImGuizmoOperation.Scale) && !Intersects(op, ImGuizmoOperation.ScaleUniversal)) || type != ImGuizmoMoveType.None /*|| !_context.MouseOver*/)
         {
             return false;
         }
