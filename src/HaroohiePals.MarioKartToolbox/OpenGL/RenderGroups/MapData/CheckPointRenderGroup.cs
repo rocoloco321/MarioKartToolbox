@@ -2,6 +2,7 @@
 using HaroohiePals.Gui.Viewport;
 using HaroohiePals.MarioKart.MapData;
 using HaroohiePals.MarioKartToolbox.OpenGL.Renderers;
+using HaroohiePals.Mathematics;
 using HaroohiePals.NitroKart.MapData.Intermediate.Sections;
 using OpenTK.Mathematics;
 using System;
@@ -106,6 +107,7 @@ namespace HaroohiePals.MarioKartToolbox.OpenGL.RenderGroups.MapData
             _lineRenderer.Thickness = 3;
             _lineRenderer.Loop = false;
             _lineRenderer.Render2d = true;
+            _lineRenderer.PickingId = ViewportContext.InvalidPickingId;
 
             for (int i = 0; i < _paths.Count; i++)
             {
@@ -141,7 +143,7 @@ namespace HaroohiePals.MarioKartToolbox.OpenGL.RenderGroups.MapData
 
         public override object GetObject(int index) => _paths[index >> PathIdShift].Points[index & PointIdMask];
 
-        public override bool GetObjectTransform(object obj, int subIndex, out Transform transform)
+        public override bool TryGetObjectTransform(object obj, int subIndex, out Transform transform)
         {
             transform = new Transform(new(0), new(0), new(1));
 
@@ -165,7 +167,7 @@ namespace HaroohiePals.MarioKartToolbox.OpenGL.RenderGroups.MapData
             return true;
         }
 
-        public override bool SetObjectTransform(object obj, int subIndex, in Transform transform)
+        public override bool TrySetObjectTransform(object obj, int subIndex, in Transform transform)
         {
             if (obj is MkdsCheckPoint checkpoint)
             {
